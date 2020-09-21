@@ -1,0 +1,17 @@
+{
+  "name": "junit-xml-parser-action",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "justAnotherDev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/justAnotherDev/junit-xml-parser-action/issues"
+  },
+  "homepage": "https://github.com/justAnotherDev/junit-xml-parser-action#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.5",
+    "junit2json": "^2.0.0"
+  }
+}

@@ -1,0 +1,106 @@
+name: Test
+on: push
+
+jobs:
+  # confirm we can parse a file
+  parse_file:
+    name: Parse File
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Parse JUnit XML string
+        id: junit-parser
+        uses: justAnotherDev/junit-xml-parser-action@v1
+        with:
+          path: .github/tests/junit.xml
+
+      - name: Confirm Results
+        run: |
+          echo "Parsed: ${{ steps.junit-parser.outputs.parsed }}" | grep true
+          echo "Total Tests: ${{ steps.junit-parser.outputs.total-test-count }}" | grep 2
+          echo "Successful Tests: ${{ steps.junit-parser.outputs.success-test-count }}" | grep 1
+          echo "Failed Tests: ${{ steps.junit-parser.outputs.failure-test-count }}" | grep 1
+
+      - name: Confirm JSON
+        run: |
+          echo "Test Suite Name: ${{ fromJson(steps.junit-parser.outputs.json).name }}" | grep gcf_junit_xml_to_bq_dummy
+
+  # confirm we gracefully handle a missing file
+  parse_missing_file:
+    name: Parse Missing File
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse JUnit XML string
+        id: junit-parser
+        uses: justAnotherDev/junit-xml-parser-action@v1
+        with:
+          path: does/not/exist.xml
+          fail-on-error: false
+
+      - name: Confirm Results
+        run: |
+          echo "Parsed: ${{ steps.junit-parser.outputs.parsed }}" | grep false
+
+  # confirm we can parse a passed in string
+  parse_string:
+    name: Parse String
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse JUnit XML string
+        id: junit-parser
+        uses: justAnotherDev/junit-xml-parser-action@v1
+        with:
+          content: ${{ env.VALID_JUNIT }}
+
+      - name: Confirm Results
+        run: |
+          echo "Parsed: ${{ steps.junit-parser.outputs.parsed }}" | grep true
+          echo "Total Tests: ${{ steps.junit-parser.outputs.total-test-count }}" | grep 2
+          echo "Successful Tests: ${{ steps.junit-parser.outputs.success-test-count }}" | grep 1
+          echo "Failed Tests: ${{ steps.junit-parser.outputs.failure-test-count }}" | grep 1
+
+      - name: Confirm JSON
+        run: |
+          echo "Test Suite Name: ${{ fromJson(steps.junit-parser.outputs.json).name }}" | grep gcf_junit_xml_to_bq_dummy
+
+  # confirm we gracefully handle invalid string
+  parse_invalid_string:
+    name: Parse Invalid String
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse JUnit XML string
+        id: junit-parser
+        uses: justAnotherDev/junit-xml-parser-action@v1
+        with:
+          fail-on-error: false
+          content: ${{ env.INVALID_JUNIT }}
+
+      - name: Confirm Results
+        run: |
+          echo "Parsed: ${{ steps.junit-parser.outputs.parsed }}" | grep false
+
+env:
+  VALID_JUNIT: '<?xml version="1.0" encoding="UTF-8"?>
+  <testsuites name="gcf_junit_xml_to_bq_dummy" tests="2" failures="1" time="1.506">
+    <testsuite name="__tests__/basic.test.ts" errors="0" failures="0" skipped="0" timestamp="2020-01-26T13:45:02" time="1.019" tests="1">
+      <testcase classname="convert xml2js output basic" name="convert xml2js output basic" time="0.01">
+      </testcase>
+    </testsuite>
+    <testsuite name="__tests__/snapshot.test.ts" errors="0" failures="1" skipped="0" timestamp="2020-01-26T13:45:02" time="1.105" tests="1">
+      <testcase classname="parse snapshot nunit failure xml" name="parse snapshot nunit failure xml" time="0.013">
+        <failure>Error: Something wrong.</failure>
+      </testcase>
+    </testsuite>
+  </testsuites>'
+  INVALID_JUNIT: '<?xml version="1.0" encoding="UTF-8"?>
+  <testsuites name="gcf_junit_xml_to_bq_dummy" tests="2" failures="1" time="1.506">
+    <testsuite name="__tests__/basic.test.ts" errors="0" failures="0" skipped="0" timestamp="2020-01-26T13:45:02" time="1.019" tests="1">
+      <testcase classname="convert xml2js output basic" name="convert xml2js output basic" time="0.01">
+      </testcase>
+    </testsuite>
+    <testsuite name="__tests__/snapshot.test.ts" errors="0" failures="1" skipped="0" timestamp="2020-01-26T13:45:02" time="1.105" tests="1">
+      <testcase classname="parse snapshot nunit failure xml" name="parse snapshot nunit failure xml" time="0.013">
+        <failure>Error: Something wrong.</failure>
+      </testcase>
+    </testsuite>'

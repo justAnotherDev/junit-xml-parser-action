@@ -1,0 +1,26 @@
+name: 'JUnit XML Parser'
+description: 'Parse test reports (for example junit.xml created by xcpretty)'
+inputs:
+  path:
+    description: 'The junit file to parse'
+    required: false
+  content:
+    description: 'The junit string to parse'
+    required: false
+  fail-on-error:
+    description: 'Should cancel workflow if parsing fails'
+    default: true
+outputs:
+  parsed:
+    description: 'Boolean specifying if parsing succeeded'
+  total-test-count:
+    description: 'The number of tests that were ran'
+  success-test-count:
+    description: 'The number of tests that succeeded'
+  failure-test-count:
+    description: 'The number of tests that failed'
+  json:
+    description: 'The fully parsed content as JSON'
+runs:
+  using: 'node12'
+  main: 'index.js'
